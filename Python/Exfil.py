@@ -1,5 +1,5 @@
 #!/bin/python3
-import os
+import os #importing OS libraries
 from urllib.request import urlopen
 import re
 from html.parser import HTMLParser
