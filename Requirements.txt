@@ -3,7 +3,7 @@ Preparation Stage
 Old Repos back (@karthick)
 - move gitlab to github (only specific repos)
 - Gitlab training videos,  Visual studio tricks, Github Workflow for tasks
-    - Private Repo(https://github.com/thedatajanitor/Useragentexfil-admin) (@karthick add SSH key )until Coding stage 1 complete
+    - Private Repo(https://github.com/thedatajanitor/Useragentexfil-admin) (Old Repository) (@karthick add SSH key )until Coding stage 1 complete
     - Public Repo Build @karthick (complete)
     - Licensing model (complete)
 
