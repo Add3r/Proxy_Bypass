@@ -9,7 +9,7 @@ Old Repos back (@karthick)
 
 - Lab environment (@jackson)
     - Squiq proxy (docker ?) - whitelist a couple of useragents to test, still incomplete
-    - client host machine
+    - client host machine - yet to be looked at
 
 Timeline ( Finish Preparation Stage - 2 weeks)
 @jack - Docker container or other setup options ****** Completed *******
