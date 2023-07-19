@@ -24,6 +24,3 @@ now any mozilla/firefox browser or useragent traffic should be blocked or denied
 Smale output:
 TCP_DENIED/403 4147 GET http://example.com/ - HIER_NONE/- text/html
 
-
-
-
