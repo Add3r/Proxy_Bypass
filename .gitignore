@@ -1,6 +1,7 @@
 #Project specific
 
-squid-lab-setup/logs/
+squid-lab-setup/
+Test Scripts/
 Requirements.txt
 *.txt
 
