@@ -4,15 +4,16 @@
 
 <div align="center">
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/Add3r/Proxy_Bypass)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/Add3r/Proxy_Bypass?label=release)
+
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)](https://github.com/Add3r/Proxy_Bypass/blob/main/LICENSE)
+![Python](https://img.shields.io/badge/Python-3.12.0-blue.svg)
+![Total User-Agents Assessed](https://img.shields.io/badge/Total%20User--Agents%20Assessed-11080-blue.svg)
+
+![Repository Views](https://komarev.com/ghpvc/?username=Add3r&label=Repository+Views)
 [![Awesome](https://img.shields.io/badge/Awesome-%F0%9F%98%8E-blueviolet.svg)](https://shields.io/)
 ![Made with Love](https://img.shields.io/badge/Made%20with-%E2%9D%A4-red.svg)
 [![Support](https://img.shields.io/static/v1?label=Support&message=Ko-fi&color=ff5e5b&logo=ko-fi)](https://ko-fi.com/add3r)
-
-![Repository Views](https://komarev.com/ghpvc/?username=Add3r&label=Repository+Views)
-![Python](https://img.shields.io/badge/Python-3.12.0-blue.svg)
-![Total User-Agents Assessed](https://img.shields.io/badge/Total%20User--Agents%20Assessed-11080-blue.svg)
 
 </div>
 
