@@ -18,11 +18,17 @@
 
 # Proxy_Bypass
 
-This command-line tool identifies user agents that can bypass proxy restrictions. Equipped with a comprehensive set of options, it allows users to test different user agents under various conditions, such as browser type and platform.
+Post Exploitation tool that identifies user agents that can bypass proxy restrictions. Equipped with a comprehensive set of options, it allows to test different user agents under various conditions, such as browser type and platform.
 
 By leveraging this tool, you can pinpoint specific user agents that can elude certain proxy server restrictions. Furthermore, the tool provides verbose outputs, batch processing capabilities, and options to test against specific target domains.
 
 Additionally, this repository contains a predefined list of user agents which can be used right out of the box, but the tool also supports custom user agent files.
+
+## Why ?
+
+<p align="center">
+  <img src="images/Post-exp.png" alt="Post Exploitation scenarios">
+</p>
 
 ## Overview
 
@@ -30,7 +36,7 @@ Additionally, this repository contains a predefined list of user agents which ca
 
 - Identify user agents that can bypass proxy restrictions.
 - Batch processing capabilities to test multiple user agents simultaneously.
-- Flexibility to test against custom target domains or use predefined domains like www.google.com.
+- Flexibility to test against custom target domains.
 - Support for both standard and special options to cater to different use cases.
 
 🚀 **Secondary:**
@@ -40,14 +46,12 @@ Additionally, this repository contains a predefined list of user agents which ca
 - Options to specify user agents by ID, allowing for targeted testing.
 - Capability to use a specific user agent string for pinpointed testing.
 
-## Why & When ?
-
-## Usage video
+## Usage video (pending)
 
 ## Setup Instructions
 
-### For Python 
-(Rust and powershell pending deployment)
+### For Python users
+(Rust and powershell pending ...)
 
 1. **Installation:**
    Clone this repository to your local machine.
