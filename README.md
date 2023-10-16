@@ -26,10 +26,20 @@ By leveraging this tool, you can pinpoint specific user agents that can elude ce
 Additionally, this repository contains a predefined list of user agents which can be used right out of the box, but the tool also supports custom user agent files.
 
 ## Why ?
+### To find which user agent bypasses proxy restrictions 
+
+<h3 align="center"><span style="color:green">Scenario 1</span></h3>
 
 <p align="center">
-  <img src="images/Post-exp.png" alt="Post Exploitation scenarios">
+  <img src="images/Post-exp-2.png" alt="Post Exploitation Scenario 1">
 </p>
+
+<h3 align="center"><span style="color:green">Scenario 2</span></h3>
+
+<p align="center">
+  <img src="images/Post-exp-1.png" alt="Post Exploitation Scenario 2">
+</p>
+
 
 ## Overview
 
