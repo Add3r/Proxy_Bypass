@@ -57,7 +57,12 @@ Additionally, this repository contains a predefined list of user agents which ca
 - Options to specify user agents by ID, allowing for targeted testing.
 - Capability to use a specific user agent string for pinpointed testing.
 
-## Usage video (pending)
+## Usage Example
+
+<p align="center">
+  <img src="images/Proxy_Bypass.gif" alt="Description of GIF">
+</p>
+
 
 ## Setup Instructions
 
