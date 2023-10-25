@@ -67,7 +67,8 @@ Additionally, this repository contains a predefined list of user agents which ca
 ## Setup Instructions
 
 ### For Python users
-(Rust and powershell pending ...)
+[Rust and PowerShell are pending... Check the milestone here.](https://github.com/Add3r/Proxy_Bypass/milestones)
+
 
 1. **Installation:**
    Clone this repository to your local machine.
