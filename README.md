@@ -40,7 +40,6 @@ Additionally, this repository contains a predefined list of user agents from [Us
   <img src="images/Post-exp-1.png" alt="Post Exploitation Scenario 2">
 </p>
 
-
 ## Overview
 
 🎯 **Primary:**
