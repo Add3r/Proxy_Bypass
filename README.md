@@ -80,7 +80,7 @@ Additionally, this repository contains a predefined list of user agents from [Us
    ```
 
 3. **Run the Script:**
-   Open a terminal and navigate to the project directory. Run the script using help command to familarise with options:
+   Open a terminal and navigate to the project directory. Run the script using help command to familiarize with options:
 
    ```bash
    > python3 proxy_bypass.py -h
