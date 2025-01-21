@@ -1,0 +1,12 @@
+1. fix issue with -O option along with -ua option (not needed)
+
+python3 proxy_bypass.py -ua "Mozilla/5.0 (Macintosh; U; i386 Mac OS X; en) AppleWebKit/417.9 (KHTML, like Gecko) Hana/1.0sdfjsdfjsahdfjsad" -O output.txt
+user-agent: Mozilla/5.0 (Macintosh; U; i386 Mac OS X; en) AppleWebKit/417.9 (KHTML, like Gecko) Hana/1.0sdfjsdfjsahdfjsad
+[x] Denied
+
+python3 proxy_bypass.py -ua "Mozilla/5.0 (Macintosh; U; i386 Mac OS X; en) AppleWebKit/417.9 (KHTML, like Gecko) Hana/1.0sdfjsdfjsahdfjsad" -O output.txt -v
+[ERROR] Invalid combination of options. 
+
+4. add to cater for more CPU threads to be faster (next phase)
+
+5. additional languages ( Rust and powershell )

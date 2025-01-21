@@ -1,0 +1,104 @@
+
+
+##### Lab Setup for Dev and Testing #####
+
+# Windows - Intel
+
+# MacOSx - M1/Intel
+1. download and install docker(choose specific chipset)
+2. Container choosen - https://hub.docker.com/r/datadog/squid
+3. run docker container with following command
+"docker run --name squid -d -p 127.0.0.1:8080:3128 -v <fullpath>/logs/squid:/var/log/squid -v <fullpath>/config/squid.conf:/etc/squid/squid.conf datadog/squid"
+4. Configure proxy settings to check if traffic is going through Squid container. Note: proxy ports for your squid container may differ as per mods in step 3 command.
+Browser or Foxy Proxy settings - add new proxy as squid container
+(or)
+recommended - to change system level network settings to go through squid proxy
+5. Check if squid proxy config has following lines
+
+acl bad_browser browser ^Mozilla 
+http_access deny bad_browser all
+
+now any mozilla/firefox browser or useragent traffic should be blocked or denied access.
+Smale output:
+TCP_DENIED/403 4147 GET http://example.com/ - HIER_NONE/- text/html
+
+
+
+Preparation Stage
+
+Old Repos back (@karthick)
+- move gitlab to github (only specific repos)
+- Gitlab training videos,  Visual studio tricks, Github Workflow for tasks
+    - Private Repo(https://github.com/thedatajanitor/Useragentexfil-admin) (Old Repository) (@karthick add SSH key )until Coding stage 1 complete
+    - Public Repo Build @karthick (complete)
+    - Licensing model (complete)
+
+- Lab environment (@jackson)
+    - Squiq proxy (docker ?) - whitelist a couple of useragents to test, still incomplete
+    - client host machine - yet to be looked at
+
+Timeline ( Finish Preparation Stage - 2 weeks)
+@jack - Docker container or other setup options ****** Completed *******
+@karthick -and basic training on github usage ******* Partial ********
+
+( Timeline
+
+Coding Stage
+
+- Design 
+    - Frameworks for CLI tool building  (@jack)
+    - Python command line tool builders and other language tool builders
+    - Languages ( Go, Rust, Python, Powershell ) - start Python and Powershell
+    - List of user agents (http://www.useragentstring.com/pages/useragentstring.php?typ=Browser)
+    - Other user agents (reasearch)
+    - couple of option as output (exe, script, ELF & other options)
+
+- Documentation
+    - Design Documentation
+    - Usage or How-to Documentation (Readme.md)
+
+- Testing
+    - Functional Testing
+    - Unit Testing
+    - Tools and automation (Grunt, ......)
+
+- Security
+    - Deprecated functions, other security issues.
+
+    Optional Test - Running in our workplace and obtain results
+
+Start of Testing stage 1 ( Minimum 10 rounds of testing: PASS - qualifies for publish)
+
+----- Ready to Publish as Public, seeking more comments
+
+Coding Stage 2 (Improvement)
+
+- based on test results & Comments
+- Rate limitation ( couple of options - standard options available in other tools)
+- features (Proper skeleton code)
+    - Top 10 popular exfil user agents
+    - Top 100 general browser user agents
+    - Custom ( pick the title of browser, Chrome, Firewfox.....)
+    - Full scan (More efficiency tweaks needed)
+    - Add from user-agent list
+
+- Documentation
+    - Design Documentation
+    - Usage or How-to Documentation (Readme.md)
+    - Optional Publish of lab for training
+
+Stage of Testing Stage 2
+    Minimum 15 rounds of PASS
+    Specific or Unit testing for Features
+
+Coding Stage 3 (Data Structures & Algorithm improvements) - Imporatant and learning
+
+- Improving array table
+- add Threading & Async (maximum CPU usage)
+- Based on bug reports
+
+- Documentation
+    - Design Documentation
+    - Usage or How-to Documentation (Readme.md)
+
+Final Testing ( Minimum 20 rounds of PASS)
