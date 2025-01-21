@@ -23,7 +23,7 @@ Post Exploitation tool that identifies user agents that can bypass proxy restric
 
 By leveraging this tool, you can pinpoint specific user agents that can elude certain proxy server restrictions. Furthermore, the tool provides verbose outputs, batch processing capabilities, and options to test against specific target domains.
 
-Additionally, this repository contains a predefined list of user agents from [Useragent-Fuzz-lib](https://github.com/Add3r/UserAgent-Fuzz-lib) repository which can be used right out of the box, but the tool also supports custom user agent files.
+Additionally, this repository contains a predefined list of user agents from [Useragent-Fuzz-lib](https://github.com/Add3r/UserAgent-Fuzz-lib) repository which can be used right out of the box and, the tool also supports custom user agent files.
 
 ## Why ?
 ### To find which user agent bypasses proxy restrictions 
@@ -62,7 +62,10 @@ Additionally, this repository contains a predefined list of user agents from [Us
   <img src="images/Proxy_Bypass.gif" alt="Description of GIF">
 </p>
 
-Rust and PowerShell are pending... 
+## Future upgrades
+
+- Multi Threading
+- other langugage support Rust and Powershell are in pipeline for build
 
 ## Setup Instructions
 
