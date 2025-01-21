@@ -62,12 +62,22 @@ Additionally, this repository contains a predefined list of user agents from [Us
   <img src="images/Proxy_Bypass.gif" alt="Description of GIF">
 </p>
 
+Rust and PowerShell are pending... 
 
 ## Setup Instructions
 
-### For Python users
-[Rust and PowerShell are pending... Check the milestone here.](https://github.com/Add3r/Proxy_Bypass/milestones)
+### For Debian users
 
+1. download the debian package from latest release - https://github.com/Add3r/Proxy_Bypass/releases/tag/v1.1.0
+
+2. run the following command
+
+```bash
+sudo dpkg -i proxy-bypass_1.1.0_all.deb
+```
+Note: Give full file path if not in the same directory of downloaded debian file
+
+### For Python users
 
 1. **Installation:**
    Clone this repository to your local machine.
