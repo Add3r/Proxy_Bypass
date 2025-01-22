@@ -208,7 +208,7 @@ class CustomHelpFormatter(argparse.RawDescriptionHelpFormatter):
         return logo + "\n" + version + desc + issues + author +"\n" + original_help
 
 def main():
-        parser = CustomArgumentParser(description=f"{B}Examples: {RES}python3 proxy_bypass.py, python3 proxy_bypass.py -B Firefox Chrome, python3 proxy_bypass.py -P mobile", formatter_class=CustomHelpFormatter)
+        parser = CustomArgumentParser(description=f"{B}Examples: {RES}\n\t$ python3 proxy_bypass.py\n\t$ python3 proxy_bypass.py -B Firefox Chrome\n\t$ python3 proxy_bypass.py -P mobile", formatter_class=CustomHelpFormatter)
         
         # Normal options
         parser.add_argument("-v", "--verbose", action="store_true", help="print verbose output")
