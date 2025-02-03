@@ -5,6 +5,7 @@ squid-lab-setup/config/squid.conf
 squid-lab-setup/config/Notes.txt
 squid-lab-setup/logs/
 Test Scripts/
+misc/
 *.txt
 
 #Vs Code specific
