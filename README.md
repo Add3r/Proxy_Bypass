@@ -158,7 +158,9 @@ If you encounter any issues or have questions, feel free to open an issue in thi
 
 ## Testing Credits
 - Functionality Testing : [s3l33](https://github.com/s3l33)
-- Debian packaging Tests : For Kali - [pumb4](https://github.com/pumb4), For ParrotOS - [schoi1337](https://github.com/schoi1337)
+- Debian packaging Tests : 
+   - For Kali - [pumb4](https://github.com/pumb4), 
+   - For ParrotOS - [schoi1337](https://github.com/schoi1337)
 
 ## License
 This project is licensed under the GPL 3.0 License - see the LICENSE file for details.
