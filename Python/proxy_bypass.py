@@ -216,7 +216,7 @@ def main():
         parser.add_argument("-t", "--time-interval", type=int, default=2, help="time interval (in seconds) for each batch to be processed")
         parser.add_argument("-p", "--proxy-details", default="127.0.0.1:8080", help="proxy server details (default: 127.0.0.1:8080)")
         parser.add_argument("-T", "--target", default="www.google.com", help="target domain to test user agents (default: www.google.com)")
-        parser.add_argument("-O", "--output", help="output file to write results, -O output.txt")
+        parser.add_argument("-O", "--output", help="output file to write SUCCESS results, -O output.txt")
         
         # Special options
         special_group = parser.add_argument_group(f"{B}Special Options{RES}")
@@ -253,7 +253,7 @@ def main():
                     f.write("{B}Available Browser Groups:{RES}\n")
                     for group in sorted(browser_groups):
                         f.write(f"- {group}\n")
-                print(f"{B}[INFO]{RES} Output saved to {args.output}")
+                print(f"{B}[INFO]{RES} Output saved to {args.output} (Only successful results are saved)")
                 sys.exit(0)
             else:
                 print(f"{B}Available Browser Groups:{RES}\n")

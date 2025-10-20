@@ -6,6 +6,7 @@ squid-lab-setup/config/Notes.txt
 squid-lab-setup/logs/
 Test Scripts/
 misc/
+build_targets.sh
 *.txt
 
 #Vs Code specific
@@ -81,3 +82,9 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Rust specific
+
+target
+cargo.lock
+cargo.toml
