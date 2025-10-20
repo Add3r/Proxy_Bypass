@@ -4,7 +4,6 @@ use reqwest::blocking::{Client, ClientBuilder};
 use reqwest::header::USER_AGENT;
 use reqwest::Proxy;
 use serde::Deserialize;
-use std::env;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
@@ -18,6 +17,7 @@ const DEFAULT_TARGET: &str = "www.google.com";
 
 const G: &str = "\x1b[32m";
 const Y: &str = "\x1b[33m";
+
 const B: &str = "\x1b[34m";
 const R: &str = "\x1b[31m";
 const RES: &str = "\x1b[0m";
@@ -181,10 +181,9 @@ impl UserAgentTester {
             .header(USER_AGENT, &entry.user_agent)
             .send();
 
-        let success = match result {
-            Ok(resp) => resp.status() == reqwest::StatusCode::OK,
-            Err(_) => false,
-        };
+        let success = result
+            .map(|resp| resp.status().is_success())
+            .unwrap_or(false);
 
         if success {
             self.success_count += 1;
@@ -218,10 +217,9 @@ impl UserAgentTester {
         let client = build_client(proxy)?;
         let result = client.head(target).header(USER_AGENT, ua).send();
 
-        let success = match result {
-            Ok(resp) => resp.status() == reqwest::StatusCode::OK,
-            Err(_) => false,
-        };
+        let success = result
+            .map(|resp| resp.status().is_success())
+            .unwrap_or(false);
 
         if success {
             self.success_count += 1;
@@ -238,13 +236,12 @@ impl UserAgentTester {
 
     fn run_tests(&mut self, args: &CliArgs) -> Result<()> {
         let filtered = self.filter_user_agents(args);
-        let filtered_cloned: Vec<UserAgentRecord> = filtered.into_iter().map(|ua| ua.clone()).collect();
-        if filtered_cloned.is_empty() {
+        if filtered.is_empty() {
             println!("{Y}[INFO]{RES} No user agents matched the provided filters.");
             return Ok(());
         }
 
-        let total = filtered_cloned.len();
+        let total = filtered.len();
         let target_url = normalize_target(&args.target);
         let client = build_client(&args.proxy_details)?;
 
@@ -253,7 +250,7 @@ impl UserAgentTester {
                 return Err(anyhow!("Rate must be greater than zero"));
             }
             let mut processed = 0;
-            for chunk in filtered_cloned.chunks(rate) {
+            for chunk in filtered.chunks(rate) {
                 for ua in chunk {
                     processed += 1;
                     self.test_user_agent(&client, &args.proxy_details, ua, args.verbose, &target_url);
@@ -283,7 +280,7 @@ impl UserAgentTester {
                 }
             }
         } else {
-            for (idx, ua) in filtered_cloned.iter().enumerate() {
+            for (idx, ua) in filtered.iter().enumerate() {
                 let current = idx + 1;
                 self.test_user_agent(&client, &args.proxy_details, ua, args.verbose, &target_url);
                 let eta_minutes =
@@ -395,7 +392,7 @@ fn normalize_target(target: &str) -> String {
     if lower.starts_with("http://") || lower.starts_with("https://") {
         target.to_string()
     } else {
-        format!("http://{target}")
+        format!("https://{target}")
     }
 }
 
@@ -441,15 +438,15 @@ fn validate_args(args: &CliArgs) -> Result<()> {
             || args.platform != PlatformChoice::All
             || args.specific_ids.is_some()
             || args.list
+            || args.rate.is_some()
+            || args.verbose
+            || args.proxy_details != DEFAULT_PROXY
+            || args.target != DEFAULT_TARGET
             || args.useragent_file.is_some()
             || args.uniq
-            || (args.rate.is_some() && args.verbose)
-            || (args.time_interval != 2 && args.verbose)
-            || (args.proxy_details != DEFAULT_PROXY && args.verbose)
-            || (args.target != DEFAULT_TARGET && args.verbose)
         {
             return Err(anyhow!(
-                "{B}[INFO]{RES} The '-u/--useragent' option must be used standalone."
+                "{B}[INFO]{RES} The '-u/--useragent' option must be used on its own."
             ));
         }
     }
@@ -568,7 +565,7 @@ Author: Karthick Siva
             Arg::new("output")
                 .short('O')
                 .long("output")
-                .help("output file to write results"),
+                .help("output file to write SUCCESS results"),
         )
         .arg(
             Arg::new("list")
@@ -659,11 +656,7 @@ fn main() -> Result<()> {
     })
     .ok();
 
-    let raw_args: Vec<String> = env::args().collect();
-    let processed_args = preprocess_args(&raw_args);
-    let matches = build_cli()
-        .try_get_matches_from(processed_args)
-        .unwrap_or_else(|e| e.exit());
+    let matches = build_cli().get_matches();
     let args = parse_args(matches);
 
     if let Err(err) = validate_args(&args) {
@@ -705,7 +698,7 @@ fn main() -> Result<()> {
             for group in groups {
                 writeln!(file, "- {group}")?;
             }
-            println!("{B}[INFO]{RES} Output saved to {filename}");
+            println!("{B}[INFO]{RES} Output saved to {filename} (Only successful results are saved)");
         } else {
             println!("{B}Available Browser Groups:{RES}\n");
             for group in groups {
@@ -735,39 +728,4 @@ fn main() -> Result<()> {
     }
 
     Ok(())
-}
-
-fn preprocess_args(raw: &[String]) -> Vec<String> {
-    if raw.is_empty() {
-        return Vec::new();
-    }
-
-    let mut result = Vec::with_capacity(raw.len());
-    result.push(raw[0].clone());
-
-    for arg in raw.iter().skip(1) {
-        let arg_str = arg.as_str();
-
-        if arg_str == "-uf" {
-            result.push("--useragent-file".to_string());
-        } else if let Some(rest) = arg_str.strip_prefix("-uf=") {
-            result.push("--useragent-file".to_string());
-            if !rest.is_empty() {
-                result.push(rest.to_string());
-            }
-        } else if arg_str == "-ua" {
-            result.push("--useragent".to_string());
-        } else if let Some(rest) = arg_str.strip_prefix("-ua=") {
-            result.push("--useragent".to_string());
-            if !rest.is_empty() {
-                result.push(rest.to_string());
-            }
-        } else if arg_str == "-uq" || arg_str == "-uq=true" {
-            result.push("--uniq".to_string());
-        } else {
-            result.push(arg.clone());
-        }
-    }
-
-    result
 }
