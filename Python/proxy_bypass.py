@@ -88,9 +88,9 @@ class UserAgentTester:
                     eta = (total_agents - idx) * args.time_interval / 60
                     
                     if args.verbose:
-                        print(f"Attempted {Y}{min(idx, total_agents)}/{total_agents}{RES} user agents | Successful: {G}{self.success_count}{RES} | Denied: {R}{self.denied_count}{RES} | ETA: {B}{eta:.2f}{RES} minutes")
+                        print(f"Attempted {Y}{min(idx, total_agents)}/{total_agents}{RES} user agents | Successful: {G}{self.success_count}{RES} | Denied: {R}{self.denied_count}{RES} | ETA: {B}{eta:.2f}{RES} seconds")
                     else:
-                        sys.stdout.write(f"\rAttempting {Y}{min(idx + args.rate, total_agents)}/{total_agents}{RES} user agents | Successful: {G}{self.success_count}{RES} | Denied: {R}{self.denied_count}{RES} | ETA: {B}{eta:.2f}{RES} minutes")
+                        sys.stdout.write(f"\rAttempting {Y}{min(idx + args.rate, total_agents)}/{total_agents}{RES} user agents | Successful: {G}{self.success_count}{RES} | Denied: {R}{self.denied_count}{RES} | ETA: {B}{eta:.2f}{RES} seconds")
                         sys.stdout.flush()
 
                 time.sleep(args.time_interval)
@@ -101,9 +101,9 @@ class UserAgentTester:
                 eta = (total_agents - idx) * args.time_interval / 60
                 
                 if args.verbose:
-                    print(f"Attempted {Y}{idx}/{total_agents}{RES} user agents | Successful: {G}{self.success_count}{RES} | Denied: {R}{self.denied_count}{RES} | ETA: {B}{eta:.2f}{RES} minutes")
+                    print(f"Attempted {Y}{idx}/{total_agents}{RES} user agents | Successful: {G}{self.success_count}{RES} | Denied: {R}{self.denied_count}{RES} | ETA: {B}{eta:.2f}{RES} seconds")
                 else:
-                    sys.stdout.write(f"\rAttempting {Y}{idx}/{total_agents}{RES} user agents | Successful: {G}{self.success_count}{RES} | Denied: {R}{self.denied_count}{RES} | ETA: {B}{eta:.2f}{RES} minutes")
+                    sys.stdout.write(f"\rAttempting {Y}{idx}/{total_agents}{RES} user agents | Successful: {G}{self.success_count}{RES} | Denied: {R}{self.denied_count}{RES} | ETA: {B}{eta:.2f}{RES} seconds")
                     sys.stdout.flush()
 
         if not args.verbose:
