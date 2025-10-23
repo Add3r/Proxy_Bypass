@@ -258,7 +258,7 @@ impl UserAgentTester {
                         ((total - processed) as f64 * args.time_interval as f64) / 60.0;
                     if args.verbose {
                         println!(
-                            "Attempted {Y}{}/{total}{RES} user agents | Successful: {G}{}{RES} | Denied: {R}{}{RES} | ETA: {B}{eta:.2}{RES} minutes",
+                            "Attempted {Y}{}/{total}{RES} user agents | Successful: {G}{}{RES} | Denied: {R}{}{RES} | ETA: {B}{eta:.2}{RES} seconds",
                             processed,
                             self.success_count,
                             self.denied_count,
@@ -266,7 +266,7 @@ impl UserAgentTester {
                         );
                     } else {
                         print!(
-                            "\rAttempting {Y}{}/{total}{RES} user agents | Successful: {G}{}{RES} | Denied: {R}{}{RES} | ETA: {B}{eta:.2}{RES} minutes",
+                            "\rAttempting {Y}{}/{total}{RES} user agents | Successful: {G}{}{RES} | Denied: {R}{}{RES} | ETA: {B}{eta:.2}{RES} seconds",
                             processed,
                             self.success_count,
                             self.denied_count,
@@ -287,7 +287,7 @@ impl UserAgentTester {
                     ((total - current) as f64 * args.time_interval as f64) / 60.0;
                 if args.verbose {
                     println!(
-                        "Attempted {Y}{}/{total}{RES} user agents | Successful: {G}{}{RES} | Denied: {R}{}{RES} | ETA: {B}{eta:.2}{RES} minutes",
+                        "Attempted {Y}{}/{total}{RES} user agents | Successful: {G}{}{RES} | Denied: {R}{}{RES} | ETA: {B}{eta:.2}{RES} seconds",
                         current,
                         self.success_count,
                         self.denied_count,
@@ -295,7 +295,7 @@ impl UserAgentTester {
                     );
                 } else {
                     print!(
-                        "\rAttempting {Y}{}/{total}{RES} user agents | Successful: {G}{}{RES} | Denied: {R}{}{RES} | ETA: {B}{eta:.2}{RES} minutes",
+                        "\rAttempting {Y}{}/{total}{RES} user agents | Successful: {G}{}{RES} | Denied: {R}{}{RES} | ETA: {B}{eta:.2}{RES} seconds",
                         current,
                         self.success_count,
                         self.denied_count,
