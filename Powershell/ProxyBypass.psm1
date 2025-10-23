@@ -119,7 +119,7 @@ function Resolve-UserAgentPath {
     return $null
 }
 
-function Load-UserAgents {
+function Get-ProxyUserAgents {
     param(
         [Parameter(Mandatory)]
         [string]$Path
@@ -267,7 +267,7 @@ function Test-SpecificUserAgent {
     }
 }
 
-function Filter-UserAgents {
+function Select-ProxyUserAgents {
     param(
         [Parameter(Mandatory)]
         [array]$UserAgents,
@@ -368,7 +368,7 @@ function Save-Results {
     }
 }
 
-function Validate-Arguments {
+function Test-ProxyBypassArguments {
     param(
         [string[]]$UsedOptions,
         [switch]$List,
@@ -553,7 +553,7 @@ function Invoke-ProxyBypass {
         throw "User agent file not found."
     }
 
-    $validationResult = Validate-Arguments -UsedOptions $usedOptions -List:$List -Output $Output -Browser $Browser -Platform $Platform -SpecificIds $SpecificIds -UserAgent $UserAgent -UserAgentFile $UserAgentFile -Uniq:$Uniq -Rate $Rate -TimeInterval $TimeInterval -ProxyDetails $ProxyDetails -Target $Target -VerboseFlag:$VerboseOutput
+    $validationResult = Test-ProxyBypassArguments -UsedOptions $usedOptions -List:$List -Output $Output -Browser $Browser -Platform $Platform -SpecificIds $SpecificIds -UserAgent $UserAgent -UserAgentFile $UserAgentFile -Uniq:$Uniq -Rate $Rate -TimeInterval $TimeInterval -ProxyDetails $ProxyDetails -Target $Target -VerboseFlag:$VerboseOutput
 
     if (-not $validationResult.IsValid) {
         Write-Host ("{0}[ERROR]{1} Invalid combination of options." -f $R, $RES)
@@ -561,7 +561,7 @@ function Invoke-ProxyBypass {
         throw "Invalid arguments."
     }
 
-    $userAgents = Load-UserAgents -Path $userAgentPath
+    $userAgents = Get-ProxyUserAgents -Path $userAgentPath
     $availableBrowserGroups = ($userAgents | ForEach-Object { Get-PropertyValue -Object $_ -PropertyName 'group' } | Where-Object { $_ } | Sort-Object -Unique)
 
     if ($Browser.Count -gt 0) {
@@ -596,32 +596,30 @@ function Invoke-ProxyBypass {
     $script:DeniedCount = 0
     $script:SuccessfulUserAgents = [System.Collections.Generic.List[string]]::new()
 
-    $cancelHandler = [System.ConsoleCancelEventHandler]{
-        param($sender, $eventArgs)
-        $eventArgs.Cancel = $true
-        Write-Host ""
-        Write-Host ("{0}[ERROR]{1} Program interrupted by user." -f $R, $RES)
-        throw "Operation cancelled."
-    }
-
-    $cancelSubscription = $false
+    $cancelSubscription = $null
     try {
-        [System.Console]::add_CancelKeyPress($cancelHandler)
-        $cancelSubscription = $true
+        Unregister-Event -SourceIdentifier ConsoleCancel -ErrorAction SilentlyContinue
+        $cancelSubscription = Register-EngineEvent -SourceIdentifier ConsoleCancel -SupportEvent -Action {
+            Write-Host ""
+            Write-Host ("{0}[ERROR]{1} Program interrupted by user." -f $using:R, $using:RES)
+            Stop-Event -SourceIdentifier ConsoleCancel
+            exit 1
+        }
     } catch {
-        $cancelHandler = $null
+        $cancelSubscription = $null
     }
 
     try {
         if ($UserAgent) {
             Test-SpecificUserAgent -Proxy $ProxyDetails -UserAgent $UserAgent -Target $Target
         } else {
-            $filteredUserAgents = Filter-UserAgents -UserAgents $userAgents -Browser $Browser -Platform $Platform -SpecificIds $SpecificIds -Uniq:$Uniq
+            $filteredUserAgents = Select-ProxyUserAgents -UserAgents $userAgents -Browser $Browser -Platform $Platform -SpecificIds $SpecificIds -Uniq:$Uniq
             Test-UserAgentsBatch -UserAgents $filteredUserAgents -Proxy $ProxyDetails -VerboseOutput:$VerboseOutput -Target $Target -Rate $Rate -TimeInterval $TimeInterval
         }
     } finally {
-        if ($cancelSubscription -and $cancelHandler) {
-            [System.Console]::remove_CancelKeyPress($cancelHandler)
+        if ($cancelSubscription) {
+            Unregister-Event -SubscriptionId $cancelSubscription.Id -ErrorAction SilentlyContinue
+            Get-Event -SourceIdentifier ConsoleCancel -ErrorAction SilentlyContinue | Remove-Event -ErrorAction SilentlyContinue
         }
     }
 
