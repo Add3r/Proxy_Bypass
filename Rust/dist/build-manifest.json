@@ -2,15 +2,15 @@
   "sources": {
     "Rust/Cargo.toml": "7edc7641ed23fb334242ced33d1e104d32a11ff06f74d505a61914e0bdd1b9b6",
     "Rust/Cargo.lock": "78a38e939e35402f38ffd8180913c20dec1444afe5f1e0f38e01e6230cacecc2",
-    "Rust/src/main.rs": "40e9f2da9f902ed3b1632e8c66e63f652bf9483c706099ea7f56153bb646b37c",
+    "Rust/src/main.rs": "29e165e7a72ab6672546575f38978f101ce23e8a1843e465b715496fc4024310",
     "Rust/src/user_agents.json": "219b4173cbcf78175f57eeafb8cc8935253d0787bb8ee69829897659570b455e",
     "Rust/build_targets.sh": "02b68f5deb124d9a2abc4813c445bf68a06d435f8718bc451a0d931e7d2ccd91"
   },
   "artifacts": {
-    "Rust/dist/proxy_bypass_aarch64-apple-darwin": "f2bb7e1cc0bca63bfefd04ef0c7dcb559a8068bad8b96e201bed08a773b2fbad",
-    "Rust/dist/proxy_bypass_x86_64-apple-darwin": "b32b725c87a4275eb29f6d003d71f50991b539bae64f8e72bfae6e7d4eb81fed",
-    "Rust/dist/proxy_bypass_x86_64-unknown-linux-gnu": "e4dab3e594a8a6d2bf0395f154d46776a38502708a1d377b17cb68fade808869",
-    "Rust/dist/proxy_bypass_aarch64-unknown-linux-gnu": "51449688e89193a78caa519a4ed49bed1c409f593320bd5aa20d82c60502618b",
-    "Rust/dist/proxy_bypass_x86_64-pc-windows-gnu.exe": "52ebd60edc67242d36485628a29af8e676fc4b19250214e70011b75d4135e7b5"
+    "Rust/dist/proxy_bypass_aarch64-apple-darwin": "9b3e20eb330bbbce1b614693122ea9c12d962b7534c3533673f9a115d7afe867",
+    "Rust/dist/proxy_bypass_x86_64-apple-darwin": "e3bdee427115d693ec2455333f6a83bb963663d1e363d258b1a80d42cfbfadff",
+    "Rust/dist/proxy_bypass_x86_64-unknown-linux-gnu": "8c668b6d060a6ef0b05bfac770c6075e2de5795f363a856fd032916b5d88bb90",
+    "Rust/dist/proxy_bypass_aarch64-unknown-linux-gnu": "73f51c5e4b4f0f525aae3b4daebf117b4ef13860fca0497136f01b998d80f1df",
+    "Rust/dist/proxy_bypass_x86_64-pc-windows-gnu.exe": "7816e8163ada4b08bb100dcccfb32712939ad638bbb207ed6958abcd130c05ae"
   }
 }
