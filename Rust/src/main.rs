@@ -34,17 +34,13 @@ struct UserAgentRecord {
     platform: Option<String>,
 }
 
-#[derive(Clone, Debug, ValueEnum, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, ValueEnum, PartialEq, Eq)]
 enum PlatformChoice {
     Mobile,
     General,
+    Ai,
+    #[default]
     All,
-}
-
-impl Default for PlatformChoice {
-    fn default() -> Self {
-        PlatformChoice::All
-    }
 }
 
 struct UserAgentTester {
@@ -66,12 +62,16 @@ impl UserAgentTester {
     }
 
     fn load_user_agents(path: Option<&str>) -> Result<Vec<UserAgentRecord>> {
+        if path.is_none() {
+            return serde_json::from_str(include_str!("user_agents.json"))
+                .context("failed to parse the embedded user-agent library");
+        }
         let file_path = path.unwrap_or("user_agents.json");
         let p = Path::new(file_path);
         if !p.exists() {
             println!(
                 "{R}[ERROR]{RES} File not found: {file_path}\n\
-                 {Y}[INFO]{RES} Ensure the file resides alongside the binary or pass with --useragent-file.\n\
+                 {Y}[INFO]{RES} Pass an existing file with --useragent-file.\n\
                  {Y}[INFO]{RES} You can download a sample library from https://github.com/Add3r/UserAgent-Fuzz-lib/blob/main/user_agents.json",
             );
             process::exit(1);
@@ -80,14 +80,18 @@ impl UserAgentTester {
         if file_path.ends_with(".json") {
             let file = File::open(p).with_context(|| format!("failed to open {}", file_path))?;
             let reader = BufReader::new(file);
-            let mut entries: Vec<UserAgentRecord> =
-                serde_json::from_reader(reader).with_context(|| "failed to parse JSON user agents")?;
+            let mut entries: Vec<UserAgentRecord> = serde_json::from_reader(reader)
+                .with_context(|| "failed to parse JSON user agents")?;
             // Ensure blank groups/platforms come back as None for consistent filtering
             for entry in &mut entries {
-                if entry.group.as_deref().map_or(false, |g| g.trim().is_empty()) {
+                if entry.group.as_deref().is_some_and(|g| g.trim().is_empty()) {
                     entry.group = None;
                 }
-                if entry.platform.as_deref().map_or(false, |g| g.trim().is_empty()) {
+                if entry
+                    .platform
+                    .as_deref()
+                    .is_some_and(|g| g.trim().is_empty())
+                {
                     entry.platform = None;
                 }
             }
@@ -112,21 +116,23 @@ impl UserAgentTester {
         }
     }
 
-    fn filter_user_agents<'a>(
-        &'a self,
-        args: &CliArgs,
-    ) -> Vec<&'a UserAgentRecord> {
-        let mut filtered: Vec<&UserAgentRecord> = self.user_agents.iter().collect();
+    fn filter_user_agents(&self, args: &CliArgs) -> Vec<UserAgentRecord> {
+        // Keep the selected records independent from self so counters can be
+        // updated while the sweep is in progress.
+        let mut filtered = self.user_agents.clone();
 
         if args.platform != PlatformChoice::All {
             filtered.retain(|ua| {
                 ua.platform
                     .as_deref()
-                    .map(|p| p.eq_ignore_ascii_case(match args.platform {
-                        PlatformChoice::Mobile => "mobile",
-                        PlatformChoice::General => "general",
-                        PlatformChoice::All => "all", // unreachable due to guard above
-                    }))
+                    .map(|p| {
+                        p.eq_ignore_ascii_case(match args.platform {
+                            PlatformChoice::Mobile => "mobile",
+                            PlatformChoice::General => "general",
+                            PlatformChoice::Ai => "ai",
+                            PlatformChoice::All => "all", // unreachable due to guard above
+                        })
+                    })
                     .unwrap_or(false)
             });
         }
@@ -242,7 +248,7 @@ impl UserAgentTester {
         }
 
         let total = filtered.len();
-        let target_url = normalize_target(&args.target);
+        let target_url = normalize_target(&args.target)?;
         let client = build_client(&args.proxy_details)?;
 
         if let Some(rate) = args.rate {
@@ -253,7 +259,13 @@ impl UserAgentTester {
             for chunk in filtered.chunks(rate) {
                 for ua in chunk {
                     processed += 1;
-                    self.test_user_agent(&client, &args.proxy_details, ua, args.verbose, &target_url);
+                    self.test_user_agent(
+                        &client,
+                        &args.proxy_details,
+                        ua,
+                        args.verbose,
+                        &target_url,
+                    );
                     let eta_minutes =
                         ((total - processed) as f64 * args.time_interval as f64) / 60.0;
                     if args.verbose {
@@ -276,15 +288,14 @@ impl UserAgentTester {
                     }
                 }
                 if processed < total {
-                    thread::sleep(Duration::from_secs(args.time_interval.into()));
+                    thread::sleep(Duration::from_secs(args.time_interval));
                 }
             }
         } else {
             for (idx, ua) in filtered.iter().enumerate() {
                 let current = idx + 1;
                 self.test_user_agent(&client, &args.proxy_details, ua, args.verbose, &target_url);
-                let eta_minutes =
-                    ((total - current) as f64 * args.time_interval as f64) / 60.0;
+                let eta_minutes = ((total - current) as f64 * args.time_interval as f64) / 60.0;
                 if args.verbose {
                     println!(
                         "Attempted {Y}{}/{total}{RES} user agents | Successful: {G}{}{RES} | Denied: {R}{}{RES} | ETA: {B}{eta:.2}{RES} seconds",
@@ -335,9 +346,7 @@ impl UserAgentTester {
                 match input.trim().to_lowercase().as_str() {
                     "yes" => {
                         let default = "output.txt";
-                        print!(
-                            "{Y}[!]{RES} Enter filename (default: {default}): "
-                        );
+                        print!("{Y}[!]{RES} Enter filename (default: {default}): ");
                         io::stdout().flush().ok();
                         let mut fname = String::new();
                         io::stdin().read_line(&mut fname)?;
@@ -377,22 +386,136 @@ impl UserAgentTester {
 
 fn build_client(proxy_details: &str) -> Result<Client> {
     let proxy_url = format!("http://{proxy_details}");
-    let proxy = Proxy::http(&proxy_url)
+    let proxy = Proxy::all(&proxy_url)
         .with_context(|| format!("failed to configure proxy {proxy_details}"))?;
     let client = ClientBuilder::new()
+        .no_proxy()
         .proxy(proxy)
+        .redirect(reqwest::redirect::Policy::none())
+        .connect_timeout(Duration::from_secs(10))
         .timeout(Duration::from_secs(20))
         .build()
         .context("failed to build HTTP client")?;
     Ok(client)
 }
 
-fn normalize_target(target: &str) -> String {
-    let lower = target.to_lowercase();
-    if lower.starts_with("http://") || lower.starts_with("https://") {
+fn normalize_target(target: &str) -> Result<String> {
+    if target.starts_with('-')
+        || target
+            .chars()
+            .any(|ch| ch.is_control() || ch.is_whitespace())
+    {
+        return Err(anyhow!("Invalid target URL"));
+    }
+    let value = if target.contains("://") {
         target.to_string()
     } else {
         format!("https://{target}")
+    };
+    let url = reqwest::Url::parse(&value).context("Invalid target URL")?;
+    if !matches!(url.scheme(), "http" | "https") || url.host_str().is_none() {
+        return Err(anyhow!("Target must use HTTP or HTTPS"));
+    }
+    Ok(url.to_string())
+}
+
+#[cfg(test)]
+mod security_tests {
+    use super::*;
+    use std::io::{Read, Write};
+    use std::net::TcpListener;
+    use std::time::Instant;
+
+    #[test]
+    fn targets_are_http_only() {
+        assert_eq!(
+            normalize_target("example.test").unwrap(),
+            "https://example.test/"
+        );
+        for value in [
+            "file:///etc/passwd",
+            "--config=test",
+            "https://example.test/\r\n",
+        ] {
+            assert!(normalize_target(value).is_err());
+        }
+    }
+
+    #[test]
+    fn embedded_library_includes_ai() {
+        let entries = UserAgentTester::load_user_agents(None).unwrap();
+        assert_eq!(entries.len(), 11170);
+        assert_eq!(
+            entries
+                .iter()
+                .filter(|ua| ua.platform.as_deref() == Some("AI"))
+                .count(),
+            70
+        );
+    }
+
+    fn proxy_response(target: &str, response: &'static str) -> (String, Option<u16>) {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        listener.set_nonblocking(true).unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = thread::spawn(move || {
+            let deadline = Instant::now() + Duration::from_secs(5);
+            loop {
+                match listener.accept() {
+                    Ok((mut stream, _)) => {
+                        stream
+                            .set_read_timeout(Some(Duration::from_secs(2)))
+                            .unwrap();
+                        let mut bytes = Vec::new();
+                        let mut buffer = [0; 1024];
+                        while !bytes.windows(4).any(|value| value == b"\r\n\r\n") {
+                            let count = stream.read(&mut buffer).unwrap();
+                            if count == 0 {
+                                break;
+                            }
+                            bytes.extend_from_slice(&buffer[..count]);
+                        }
+                        stream.write_all(response.as_bytes()).unwrap();
+                        return String::from_utf8(bytes).unwrap();
+                    }
+                    Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                        assert!(Instant::now() < deadline, "Selected proxy was not used");
+                        thread::sleep(Duration::from_millis(10));
+                    }
+                    Err(error) => panic!("{error}"),
+                }
+            }
+        });
+        let status = build_client(&address.to_string())
+            .unwrap()
+            .head(target)
+            .header(USER_AGENT, "Security-test")
+            .send()
+            .ok()
+            .map(|r| r.status().as_u16());
+        (server.join().unwrap(), status)
+    }
+
+    #[test]
+    fn https_uses_selected_proxy_connect() {
+        let (request, _) = proxy_response(
+            "https://example.invalid/",
+            "HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n",
+        );
+        assert!(request.starts_with("CONNECT example.invalid:443 "));
+    }
+
+    #[test]
+    fn http_uses_proxy_and_does_not_follow_redirects() {
+        let (request, status) = proxy_response(
+            "http://example.invalid/",
+            "HTTP/1.1 302 Found\r\nLocation: http://outside.invalid/\r\nContent-Length: 0\r\n\r\n",
+        );
+        assert!(request.starts_with("HEAD http://example.invalid/ "));
+        assert!(request
+            .to_ascii_lowercase()
+            .contains("user-agent: security-test"));
+        assert_eq!(status, Some(302));
     }
 }
 
@@ -433,8 +556,8 @@ fn validate_args(args: &CliArgs) -> Result<()> {
         }
     }
 
-    if let Some(_) = args.useragent {
-        if args.browser.is_some()
+    if args.useragent.is_some()
+        && (args.browser.is_some()
             || args.platform != PlatformChoice::All
             || args.specific_ids.is_some()
             || args.list
@@ -443,12 +566,11 @@ fn validate_args(args: &CliArgs) -> Result<()> {
             || args.proxy_details != DEFAULT_PROXY
             || args.target != DEFAULT_TARGET
             || args.useragent_file.is_some()
-            || args.uniq
-        {
-            return Err(anyhow!(
-                "{B}[INFO]{RES} The '-u/--useragent' option must be used on its own."
-            ));
-        }
+            || args.uniq)
+    {
+        return Err(anyhow!(
+            "{B}[INFO]{RES} The '-u/--useragent' option must be used on its own."
+        ));
     }
 
     let mut secondary = 0;
@@ -495,7 +617,7 @@ struct CliArgs {
 
 fn build_cli() -> Command {
     Command::new("proxy_bypass")
-        .version("1.0")
+        .version(env!("CARGO_PKG_VERSION"))
         .about("Command-line tool to identify user-agents that bypass proxy restrictions")
         .after_help(
             "
@@ -587,7 +709,7 @@ Author: Karthick Siva
                 .long("Platform")
                 .default_value("all")
                 .value_parser(clap::builder::EnumValueParser::<PlatformChoice>::new())
-                .help("select user agent platform (mobile/general/all)"),
+                .help("select user agent platform (mobile/general/ai/all)"),
         )
         .arg(
             Arg::new("specific_ids")
@@ -692,13 +814,15 @@ fn main() -> Result<()> {
         groups.sort();
         groups.dedup();
         if let Some(filename) = args.output.as_ref() {
-            let mut file = File::create(filename)
-                .with_context(|| format!("failed to create {filename}"))?;
+            let mut file =
+                File::create(filename).with_context(|| format!("failed to create {filename}"))?;
             writeln!(file, "Available Browser Groups:")?;
             for group in groups {
                 writeln!(file, "- {group}")?;
             }
-            println!("{B}[INFO]{RES} Output saved to {filename} (Only successful results are saved)");
+            println!(
+                "{B}[INFO]{RES} Output saved to {filename} (Only successful results are saved)"
+            );
         } else {
             println!("{B}Available Browser Groups:{RES}\n");
             for group in groups {
@@ -709,7 +833,7 @@ fn main() -> Result<()> {
     }
 
     if let Some(ua) = &args.useragent {
-        let target_url = normalize_target(&args.target);
+        let target_url = normalize_target(&args.target)?;
         tester.test_specific_user_agent(&args.proxy_details, ua, &target_url)?;
         return Ok(());
     }

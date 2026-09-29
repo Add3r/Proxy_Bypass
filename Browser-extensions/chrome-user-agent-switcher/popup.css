@@ -1,0 +1,15 @@
+:root { color-scheme: light dark; font: 13px system-ui, sans-serif; }
+body { margin: 0; min-width: 390px; }
+main { padding: 14px; }
+h1 { font-size: 17px; margin: 0 0 8px; }
+label { display: block; font-weight: 600; margin: 10px 0; }
+input:not([type="checkbox"]), select, textarea { box-sizing: border-box; display: block; font: inherit; margin-top: 4px; width: 100%; }
+select { min-height: 30px; }
+textarea { resize: vertical; }
+.grid { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+.notice, .hint, .selected { font-size: 12px; line-height: 1.35; }
+.notice { background: #fff4cc; color: #3d2e00; padding: 8px; border-radius: 4px; }
+@media (prefers-color-scheme: dark) { .notice { background: #493b00; color: #fff2bf; } }
+.hint, .selected { color: #666; margin: 4px 0; }
+button { cursor: pointer; font: inherit; padding: 7px 12px; }
+#status { min-height: 1.2em; margin-bottom: 0; }

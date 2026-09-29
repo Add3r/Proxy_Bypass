@@ -1,0 +1,15 @@
+{
+  "sources": {
+    "Burp-extension/UserAgentFuzzer.java": "6bd2bad1dddc599c3d4a4d24d2f07bb0df1da450fe06c9abdd908f7157b6b818",
+    "Burp-extension/user_agents.json": "219b4173cbcf78175f57eeafb8cc8935253d0787bb8ee69829897659570b455e",
+    "Burp-extension/gson-2.14.0.jar": "2cbd119bf1961c28788310963dc80ba65f58cdeec1dd139c8bdb1240faa2c36f",
+    "Burp-extension/montoya-api-2025.10.jar": "1cf6624874c38b9b1d689b2019ffe71ad65468b63abbf98bbe5d235cda40fc04",
+    "Burp-extension/GSON-LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "Burp-extension/README.md": "c2f9c665103691c3c17e5ff118f874e6ed5d4c100a80879f0e40328877636d73",
+    "LICENSE": "c472a442a0313861a22701ede2377e4b0b514e37e304fa9c02755e60f5436dba",
+    "scripts/build_burp.py": "93e496ef56da0d908dd9887a77bcd42645da0fcb2017a75047fb0a95b5ae77d8"
+  },
+  "artifacts": {
+    "Burp-extension/UserAgentFuzzer.jar": "43118147dbac76822611a7ab7ab3b573733785a5ee1cd1a6f2e6091dffb1ae26"
+  }
+}

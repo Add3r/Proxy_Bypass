@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>User-Agent Switcher</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <h1>User-Agent Switcher</h1>
+    <p class="notice">For authorized testing only. Changes the HTTP <code>User-Agent</code> request header; JavaScript and User-Agent Client Hints are unchanged.</p>
+    <label><input id="enabled" type="checkbox"> Enable header override</label>
+    <label>URL filter <input id="url-filter" value="|http" spellcheck="false"></label>
+    <p class="hint"><code>|http</code> covers HTTP(S). Example target: <code>|https://example.com/</code>.</p>
+    <div class="grid">
+      <label>Platform <select id="platform"></select></label>
+      <label>Group <select id="group"></select></label>
+    </div>
+    <label>Search <input id="search" placeholder="ID, title, group, or string"></label>
+    <label>Library entry <select id="entry" size="8"></select></label>
+    <p id="selected" class="selected">No library entry selected.</p>
+    <label>Or enter a custom user-agent <textarea id="custom" rows="3" placeholder="Optional custom header value"></textarea></label>
+    <button id="save" type="button">Save and apply</button>
+    <p id="status" role="status"></p>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

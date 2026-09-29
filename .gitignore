@@ -88,3 +88,12 @@ $RECYCLE.BIN/
 target
 cargo.lock
 cargo.toml
+!Rust/Cargo.lock
+!Rust/Cargo.toml
+
+# Locally generated GitHub release assets
+release/
+__pycache__/
+*.pyc
+*.class
+!Rust/build_targets.sh

@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Proxy Bypass User-Agent Switcher",
+  "version": "1.2.0",
+  "description": "Select a user-agent from the bundled Proxy Bypass library for authorized testing.",
+  "action": {
+    "default_title": "User-Agent Switcher",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "scripts": [
+      "service-worker.js"
+    ]
+  },
+  "permissions": [
+    "storage",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "proxy-bypass-user-agent-switcher@example.invalid",
+      "strict_min_version": "128.0"
+    }
+  }
+}

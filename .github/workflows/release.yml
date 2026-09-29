@@ -1,0 +1,55 @@
+name: Validate and draft GitHub release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Existing release tag (for example v1.2.0)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  package-and-draft:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ inputs.version || github.ref_name }}
+    steps:
+      - name: Validate tag syntax
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+      - name: Check out the exact tag
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: refs/tags/${{ inputs.version || github.ref_name }}
+          persist-credentials: false
+      - name: Verify libraries and committed binary integrity
+        run: |
+          python3 scripts/check_libraries.py
+          python3 scripts/release_integrity.py verify all
+      - name: Regression tests
+        run: |
+          python3 -m unittest discover -s tests -p 'test_*.py'
+          node tests/browser-security.cjs
+          pwsh -NoProfile -File tests/powershell-security.ps1
+          cargo test --locked --manifest-path Rust/Cargo.toml
+          cargo clippy --locked --manifest-path Rust/Cargo.toml -- -D warnings
+          javac --release 17 -cp Burp-extension/UserAgentFuzzer.jar:Burp-extension/montoya-api-2025.10.jar tests/BurpLibraryTest.java
+          java -cp tests:Burp-extension/UserAgentFuzzer.jar:Burp-extension/montoya-api-2025.10.jar BurpLibraryTest
+      - name: Rust dependency advisory scan
+        run: |
+          cargo install cargo-audit --version 0.22.2 --locked
+          cd Rust
+          cargo audit
+      - name: Package validated assets
+        run: bash scripts/package_release.sh "$RELEASE_TAG" release
+      - name: Create draft for manual compatibility sign-off
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$RELEASE_TAG" release/* --verify-tag --draft --title "$RELEASE_TAG" --notes-file RELEASE_NOTES.md

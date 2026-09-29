@@ -8,7 +8,7 @@ This directory ships the PowerShell implementation of **proxy_bypass**. It mirro
 ## What you get
 
 - User-agent loading from `user_agents.json` (relative paths or explicit files).
-- Filtering by browser group, platform, specific IDs, or unique groups.
+- Filtering by browser group, platform (`mobile`, `general`, `ai`, or `all`), specific IDs, or unique groups.
 - Batch execution with custom rate/interval and progress output.
 - Optional verbose traces for each attempt and curl-backed proxy testing.
 - Result persistence with the same prompts as the Python CLI.
@@ -18,7 +18,7 @@ This directory ships the PowerShell implementation of **proxy_bypass**. It mirro
 
 ### Prerequisites
 
-- PowerShell 7+ (`pwsh`) on macOS, Linux, or Windows.
+- PowerShell 7.3+ (`pwsh`) on macOS, Linux, or Windows.
 - `curl` available on `PATH` (macOS includes it; other platforms may need manual install).
 - A `user_agents.json` file in this directory (copy the canonical file from `../Python/user_agents.json` if missing).
 
@@ -26,15 +26,16 @@ This directory ships the PowerShell implementation of **proxy_bypass**. It mirro
 
 ```
 # from repo root
-pwsh -NoProfile -File Proxy_Bypass/Powershell/proxy_bypass.ps1 --help
+pwsh -NoProfile -File Powershell/proxy_bypass.ps1 --help
 ```
 
 Other examples:
 
 ```
-pwsh -NoProfile -File Proxy_ByPass/Powershell/proxy_bypass.ps1 -Browser Chrome -Rate 5 -Time-Interval 1 -Target https://www.example.com
-pwsh -NoProfile -File Proxy_ByPass/Powershell/proxy_bypass.ps1 -List
-pwsh -NoProfile -File Proxy_ByPass/Powershell/proxy_bypass.ps1 -UserAgent "Mozilla/5.0 ..."
+pwsh -NoProfile -File Powershell/proxy_bypass.ps1 -Browser Chrome -Rate 5 -Time-Interval 1 -Target https://www.example.com
+pwsh -NoProfile -File Powershell/proxy_bypass.ps1 -Platform ai
+pwsh -NoProfile -File Powershell/proxy_bypass.ps1 -List
+pwsh -NoProfile -File Powershell/proxy_bypass.ps1 -UserAgent "Mozilla/5.0 ..."
 ```
 
 Running `Proxy_ByPass/Test Scripts/PowerShell_test_commands.sh` will execute a curated suite of script invocations for smoke testing.
@@ -42,7 +43,7 @@ Running `Proxy_ByPass/Test Scripts/PowerShell_test_commands.sh` will execute a c
 ### Use as a module
 
 ```
-Set-Location Proxy_ByPass/Powershell
+Set-Location Proxy_Bypass/Powershell
 Import-Module (Resolve-Path ./ProxyBypass.psm1) -Force
 Invoke-ProxyBypass -Help
 ```
@@ -63,8 +64,7 @@ Whenever you edit `ProxyBypass.psm1`, rerun `Import-Module ... -Force` (or `Remo
 Powershell/
 ├── proxy_bypass.ps1          # Entry-point script
 ├── ProxyBypass.psm1          # Importable module (Invoke-ProxyBypass)
-├── user_agents.json          # Default UA library (copy of Python file)
-├── input.txt                 # Sample UA list for -UserAgentFile tests
+├── user_agents.json          # Canonical bundled UA library, including AI agents
 └── README.md                 # This document
 ```
 
@@ -72,6 +72,6 @@ Powershell/
 
 - **curl not found**: install it (Homebrew on macOS: `brew install curl`; Windows: winget/scoop/chocolatey) or ensure it’s on `PATH`.
 - **Module not updating**: re-import with `Import-Module ... -Force` in the same session, or start a new PowerShell process.
-- **Missing `user_agents.json`**: copy it from `Proxy_ByPass/Python/user_agents.json` or supply one via `-UserAgentFile`.
+- **Missing `user_agents.json`**: copy it from `Proxy_Bypass/Python/user_agents.json` or supply one via `-UserAgentFile`.
 
 With the script or module available, you can script proxy bypass checks, integrate them into automation, or run the CLI interactively exactly as the original Python utility.

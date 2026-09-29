@@ -5,6 +5,9 @@ import subprocess
 import argparse
 import sys
 import time
+import os
+from urllib.parse import urlsplit
+from pathlib import Path
 from collections import Counter
 
 # Color Codes for Printing
@@ -40,10 +43,9 @@ class UserAgentTester:
 
     def test_user_agent(self, proxy, user_agent, verbose=False, target="www.google.com"):
         ua = user_agent["user-agent"]
-        cmd = f"curl -s -A '{ua}' {target} -I --proxy 'http://{proxy}'"
-        output = subprocess.getoutput(cmd)
+        output = self.run_curl(proxy, ua, target)
         
-        if "200 OK" in output:
+        if output.isdigit() and 200 <= int(output) < 300:
             self.success_count += 1
             self.successful_user_agents.append(ua)
             if verbose:
@@ -54,14 +56,42 @@ class UserAgentTester:
                 print(f"\n{B}ID: {RES}{user_agent.get('id', 'N/A')}\n{B}group: {RES}{user_agent.get('group', 'N/A')}\n{B}user-agent: {RES}{ua}\n{B}proxy: {RES}{proxy}\n{B}target: {RES}{target}\n{R}[x] Denied{RES}\n")
 
     def test_specific_user_agent(self, proxy, user_agent, target="www.google.com"):
-        cmd = f"curl -s -A '{user_agent}' {target} -I --proxy 'http://{proxy}'"
-        output = subprocess.getoutput(cmd)
+        output = self.run_curl(proxy, user_agent, target)
 
-        if "200 OK" in output:
+        if output.isdigit() and 200 <= int(output) < 300:
             self.success_count += 1
             print(f"\n{B}ID: {RES}'N/A'\n{B}group: {RES}'N/A'\n{B}user-agent: {RES}{user_agent}\n{B}proxy: {RES}{proxy}\n{B}target: {RES}{target}\n{G}[+] Success{RES}\n")
         else:
             print(f"\n{B}ID: {RES}'N/A'\n{B}group: {RES}'N/A'\n{B}user-agent: {RES}{user_agent}\n{B}proxy: {RES}{proxy}\n{B}target: {RES}{target}\n{R}[x] Denied{RES}\n")
+
+    @staticmethod
+    def run_curl(proxy, user_agent, target):
+        """Run curl without a shell so library and CLI values are never executable."""
+        if any(ord(char) < 32 or ord(char) == 127 for char in user_agent):
+            return ""
+        try:
+            if target.startswith("-") or any(ord(char) <= 32 for char in target):
+                return ""
+            target = target if "://" in target else "https://" + target
+            parsed = urlsplit(target)
+            if parsed.scheme not in ("http", "https") or not parsed.hostname:
+                return ""
+            proxy_url = proxy if "://" in proxy else "http://" + proxy
+            if urlsplit(proxy_url).scheme not in ("http", "https") or not urlsplit(proxy_url).hostname:
+                return ""
+            completed = subprocess.run(
+                ["curl", "-q", "--silent", "--globoff", "--head", "--proto", "=http,https",
+                 "--noproxy", "", "--max-time", "20", "--connect-timeout", "10",
+                 "--user-agent", user_agent, "--proxy", proxy_url,
+                 "--output", os.devnull, "--write-out", "%{http_code}", "--url", target],
+                capture_output=True,
+                text=True,
+                timeout=30,
+                check=False,
+            )
+            return completed.stdout.strip() if completed.returncode == 0 else ""
+        except (OSError, ValueError, subprocess.TimeoutExpired):
+            return ""
 
     def test_user_agents(self, args):
         user_agents_to_test = self.user_agents
@@ -143,6 +173,10 @@ class UserAgentTester:
             sys.exit(1)
 
 def validate_args(args):   
+    if args.rate is not None and args.rate <= 0:
+        return False, "Rate must be greater than zero."
+    if args.time_interval < 0:
+        return False, "Time interval must not be negative."
     if args.list:
         # Check the number of arguments provided to ensure only `-l` and `-O` are used
         provided_args = sys.argv[1:]
@@ -201,7 +235,7 @@ class CustomHelpFormatter(argparse.RawDescriptionHelpFormatter):
                           PROXY BYPASS with USERAGENTS
         """
         author = f"{B}Author: {RES}Karthick Siva\n"
-        version = f"{B}Version: {RES}1.0\n"
+        version = f"{B}Version: {RES}1.2.0\n"
         desc = f"{B}Description: {RES}Command-line tool to identify useragents that bypasses proxy restrictions\n"
         issues = f"{B}Report issues at: {RES}https://github.com/Add3r/Proxy_Bypass/issues\n"
         original_help = super().format_help()
@@ -222,7 +256,7 @@ def main():
         special_group = parser.add_argument_group(f"{B}Special Options{RES}")
         special_group.add_argument("-l", "--list", action="store_true", help="list available browser groups, proxy_bypass.py -l")
         special_group.add_argument("-B", "--Browser", nargs="+", help="select user agent browser groups")
-        special_group.add_argument("-P", "--Platform", choices=["mobile", "general", "all"], default="all", help="select user agent platform (mobile/general/all)")
+        special_group.add_argument("-P", "--Platform", choices=["mobile", "general", "ai", "all"], default="all", help="select user agent platform (mobile/general/ai/all)")
         special_group.add_argument("-s", "--specific-ids", help="run specific user agents by ID (comma-separated) by using ua-id from json file. -ua 'ua-30','ua-31'")
         special_group.add_argument("-ua", "--useragent", help="specific user agent string for testing")
         special_group.add_argument("-uf", "--useragent-file", help="file containing user agents to be tested")
@@ -235,7 +269,8 @@ def main():
             print(f"{R}[ERROR]{RES} Invalid combination of options. \n{error_message}")
             sys.exit(1)
 
-        tester = UserAgentTester(args.useragent_file if args.useragent_file else "user_agents.json")
+        default_user_agents = str(Path(__file__).with_name("user_agents.json"))
+        tester = UserAgentTester(args.useragent_file if args.useragent_file else default_user_agents)
 
         available_browser_groups = set(ua["group"] for ua in tester.user_agents)
         # Check if -B value is valid

@@ -1,4 +1,6 @@
+#Requires -Version 7.3
 Set-StrictMode -Version Latest
+$PSNativeCommandArgumentPassing = 'Standard'
 $ErrorActionPreference = "Stop"
 
 $esc = [char]27
@@ -31,14 +33,14 @@ function Show-Help {
     )
     $logo = [string]::Join([Environment]::NewLine, $logoLines)
     Write-Host $logo
-    Write-Host ("{0}Version: {1}1.0" -f $B, $RES)
+    Write-Host ("{0}Version: {1}1.2.0" -f $B, $RES)
     Write-Host ("{0}Description: {1}Command-line tool to identify useragents that bypass proxy restrictions" -f $B, $RES)
     Write-Host ("{0}Report issues at: {1}https://github.com/Add3r/Proxy_Bypass/issues" -f $B, $RES)
     Write-Host ("{0}Author: {1}Karthick Siva" -f $B, $RES)
     Write-Host ""
     Write-Host "usage: proxy_bypass.py [-h] [-v] [-r RATE] [-t TIME_INTERVAL]"
     Write-Host "                       [-p PROXY_DETAILS] [-T TARGET] [-O OUTPUT] [-l]"
-    Write-Host "                       [-B BROWSER [BROWSER ...]] [-P {mobile,general,all}]"
+    Write-Host "                       [-B BROWSER [BROWSER ...]] [-P {mobile,general,ai,all}]"
     Write-Host "                       [-s SPECIFIC_IDS] [-ua USERAGENT] [-uf USERAGENT_FILE]"
     Write-Host "                       [-uq]"
     Write-Host ""
@@ -66,8 +68,8 @@ function Show-Help {
     Write-Host "  -l, --list            list available browser groups, proxy_bypass.py -l"
     Write-Host "  -B BROWSER [BROWSER ...], --Browser BROWSER [BROWSER ...]"
     Write-Host "                        select user agent browser groups"
-    Write-Host "  -P {mobile,general,all}, --Platform {mobile,general,all}"
-    Write-Host "                        select user agent platform (mobile/general/all)"
+    Write-Host "  -P {mobile,general,ai,all}, --Platform {mobile,general,ai,all}"
+    Write-Host "                        select user agent platform (mobile/general/ai/all)"
     Write-Host "  -s SPECIFIC_IDS, --specific-ids SPECIFIC_IDS"
     Write-Host "                        run specific user agents by ID (comma-separated) by"
     Write-Host "                        using ua-id from json file. -ua 'ua-30','ua-31'"
@@ -133,7 +135,7 @@ function Parse-Arguments {
 
     $reportPlatform = {
         param($option)
-        Write-Host ("{0}[ERROR]{1} Option '{2}' expects one of: mobile, general, all." -f $R, $RES, $option)
+        Write-Host ("{0}[ERROR]{1} Option '{2}' expects one of: mobile, general, ai, all." -f $R, $RES, $option)
         exit 2
     }
 
@@ -187,7 +189,7 @@ function Parse-Arguments {
                 "--platform" {
                     if ([string]::IsNullOrEmpty($value)) { & $reportMissing "--platform" }
                     $normalized = $value.ToLowerInvariant()
-                    if (@("mobile", "general", "all") -notcontains $normalized) { & $reportPlatform "--platform" }
+                    if (@("mobile", "general", "ai", "all") -notcontains $normalized) { & $reportPlatform "--platform" }
                     $result["Platform"] = $normalized
                     if (-not $used.Contains("Platform")) { [void]$used.Add("Platform") }
                     $handled = $true
@@ -312,7 +314,7 @@ function Parse-Arguments {
             $i++
             $value = $argsArray[$i]
             $normalized = $value.ToLowerInvariant()
-            if (@("mobile", "general", "all") -notcontains $normalized) { & $reportPlatform $optionLabel }
+            if (@("mobile", "general", "ai", "all") -notcontains $normalized) { & $reportPlatform $optionLabel }
             $result["Platform"] = $normalized
             if (-not $used.Contains("Platform")) { [void]$used.Add("Platform") }
             $i++
@@ -441,15 +443,37 @@ function Load-UserAgents {
     }
 }
 
+function Invoke-UserAgentRequest {
+    param([string]$Proxy, [string]$UserAgent, [string]$Target)
+    if ($UserAgent -match '[\x00-\x1f\x7f]' -or $Target -match '^[\-]|[\x00-\x20\x7f]') { return '' }
+    if ($Target -notmatch '://') { $Target = "https://$Target" }
+    $targetUri = $null
+    if (-not [Uri]::TryCreate($Target, [UriKind]::Absolute, [ref]$targetUri) -or
+        $targetUri.Scheme -notin @('http', 'https') -or -not $targetUri.Host) { return '' }
+    if ($Proxy -notmatch '://') { $Proxy = "http://$Proxy" }
+    $proxyUri = $null
+    if (-not [Uri]::TryCreate($Proxy, [UriKind]::Absolute, [ref]$proxyUri) -or
+        $proxyUri.Scheme -notin @('http', 'https') -or -not $proxyUri.Host) { return '' }
+    $nullDevice = if ($IsWindows) { 'NUL' } else { '/dev/null' }
+    $arguments = @('-q', '--silent', '--globoff', '--head', '--proto', '=http,https',
+        '--noproxy', '', '--max-time', '20', '--connect-timeout', '10',
+        '--user-agent', $UserAgent, '--proxy', $Proxy, '--output', $nullDevice,
+        '--write-out', '%{http_code}', '--url', $Target)
+    return Invoke-CurlRequest -Arguments $arguments
+}
+
 function Invoke-CurlRequest {
     param(
         [Parameter(Mandatory)]
+        [AllowEmptyString()]
         [string[]]$Arguments
     )
 
     try {
         $null = Get-Command $curlCommand -ErrorAction Stop
-        return (& $curlCommand @Arguments 2>$null | Out-String)
+        $result = (& $CurlCommand @Arguments 2>$null | Out-String)
+        if ($LASTEXITCODE -ne 0) { return '' }
+        return $result.Trim()
     } catch {
         Write-Host "$R[ERROR]$RES Failed to execute curl. Ensure curl is installed and accessible."
         exit 1
@@ -505,10 +529,9 @@ function Test-UserAgent {
     $uaString = Get-PropertyValue -Object $UserAgent -PropertyName 'user-agent'
     $id = Get-PropertyValue -Object $UserAgent -PropertyName 'id'
     $group = Get-PropertyValue -Object $UserAgent -PropertyName 'group'
-    $arguments = @("-s", "-A", $uaString, $Target, "-I", "--proxy", "http://$Proxy")
-    $output = Invoke-CurlRequest -Arguments $arguments
+    $output = Invoke-UserAgentRequest -Proxy $Proxy -UserAgent $uaString -Target $Target
 
-    if ($output -match "200 OK") {
+    if ($output -match '^2[0-9]{2}$') {
         $script:SuccessCount++
         [void]$script:SuccessfulUserAgents.Add($uaString)
         if ($VerboseOutput) {
@@ -534,10 +557,9 @@ function Test-SpecificUserAgent {
         [string]$Target
     )
 
-    $arguments = @("-s", "-A", $UserAgent, $Target, "-I", "--proxy", "http://$Proxy")
-    $output = Invoke-CurlRequest -Arguments $arguments
+    $output = Invoke-UserAgentRequest -Proxy $Proxy -UserAgent $UserAgent -Target $Target
 
-    if ($output -match "200 OK") {
+    if ($output -match '^2[0-9]{2}$') {
         $script:SuccessCount++
         Write-VerboseDetails -Id "N/A" -Group "N/A" -UserAgent $UserAgent -Proxy $Proxy -Target $Target -IsSuccess $true
     } else {

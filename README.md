@@ -62,10 +62,23 @@ Additionally, this repository contains a predefined list of user agents from [Us
   <img src="images/Proxy_Bypass.gif" alt="Description of GIF">
 </p>
 
+## Implementations
+
+The same updated library is included with each implementation: **11,170 user-agent records**, including 70 records in the `AI` platform and the `AI-Agents` group.
+
+- **Python:** `python3 Python/proxy_bypass.py -P ai`
+- **PowerShell 7.3+:** `pwsh -NoProfile -File Powershell/proxy_bypass.ps1 -P ai`
+- **Rust:** `cd Rust && cargo run -- -P ai` (the release binary embeds the default library, so it can run on a tester-controlled destination without an interpreter or adjacent JSON file)
+- **Chrome and Firefox:** see [Browser-extensions/README.md](Browser-extensions/README.md) for unpacked installation and use.
+- **Burp Suite:** load [Burp-extension/UserAgentFuzzer.jar](Burp-extension/UserAgentFuzzer.jar) from Extensions. See [Burp-extension/README.md](Burp-extension/README.md).
+
+All tools are intended only for targets and proxy environments you are authorized to assess.
+
+Release build/check instructions are in [RELEASING.md](RELEASING.md); security fixes and outstanding manual checks are in [SECURITY_REVIEW.md](SECURITY_REVIEW.md). Always set `-T` to an authorized CLI target and narrow the browser URL filter before enabling an override. A 2xx response alone does not establish a security bypass.
+
 ## Future upgrades
 
 - Multi Threading
-- other langugage support Rust and Powershell are in pipeline for build
 
 ## Setup Instructions
 
@@ -116,12 +129,12 @@ Note: Give full file path if not in the same directory of downloaded debian file
         
                             PROXY BYPASS with USERAGENTS
             
-    Version: 1.0
+    Version: 1.2.0
     Description: Command-line tool to identify useragents that bypasses proxy restrictions
     Report issues at: https://github.com/Add3r/Proxy_Bypass/issues
     Author: Karthick Siva
 
-    usage: proxy_bypass.py [-h] [-v] [-r RATE] [-t TIME_INTERVAL] [-p PROXY_DETAILS] [-T TARGET] [-O OUTPUT] [-l] [-B BROWSER [BROWSER ...]] [-P {mobile,general,all}] [-s SPECIFIC_IDS] [-ua USERAGENT] [-uf USERAGENT_FILE] [-uq]
+    usage: proxy_bypass.py [-h] [-v] [-r RATE] [-t TIME_INTERVAL] [-p PROXY_DETAILS] [-T TARGET] [-O OUTPUT] [-l] [-B BROWSER [BROWSER ...]] [-P {mobile,general,ai,all}] [-s SPECIFIC_IDS] [-ua USERAGENT] [-uf USERAGENT_FILE] [-uq]
 
     Examples: python3 proxy_bypass.py, python3 proxy_bypass.py -B Firefox Chrome, python3 proxy_bypass.py -P mobile
 
@@ -142,8 +155,8 @@ Note: Give full file path if not in the same directory of downloaded debian file
     -l, --list            list available browser groups, proxy_bypass.py -l
     -B BROWSER [BROWSER ...], --Browser BROWSER [BROWSER ...]
                             select user agent browser groups
-    -P {mobile,general,all}, --Platform {mobile,general,all}
-                            select user agent platform (mobile/general/all)
+    -P {mobile,general,ai,all}, --Platform {mobile,general,ai,all}
+                            select user agent platform (mobile/general/ai/all)
     -s SPECIFIC_IDS, --specific-ids SPECIFIC_IDS
                             run specific user agents by ID (comma-separated) by using ua-id from json file. -ua 'ua-30','ua-31'
     -ua USERAGENT, --useragent USERAGENT
